@@ -20,28 +20,31 @@ pub struct Client {
     key_provider: GoogleKeyProvider,
 }
 
-impl Client {
-    pub fn new() -> Client {
+impl Default for Client {
+    fn default() -> Client {
         Client {
             key_provider: GoogleKeyProvider::new(),
         }
     }
+}
 
+impl Client {
     pub fn verify_id_token(&mut self, id_token: &str, iss: &str) -> Result<Claims, Error> {
         let header = jsonwebtoken::decode_header(id_token)?;
-        let kid = header.kid.ok_or(format_err!("Token kid missing"))?;
+        let kid = header.kid.ok_or_else(|| format_err!("Token kid missing"))?;
         let validation = Validation::new(header.alg);
         let public_key = self.key_provider.get_key(&kid)?;
         let data = jsonwebtoken::decode::<Claims>(id_token, public_key, &validation)?;
         let expected_iss = &format!("https://securetoken.google.com/{}", iss);
         let token_iss = &data.claims.iss;
-        match expected_iss == token_iss {
-            true => Ok(data.claims),
-            false => Err(format_err!(
+        if expected_iss == token_iss {
+            Ok(data.claims)
+        } else {
+            Err(format_err!(
                 "Token iss: {} != expected iss: {}",
                 token_iss,
                 expected_iss
-            )),
+            ))
         }
     }
 }

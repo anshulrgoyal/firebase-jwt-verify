@@ -31,7 +31,7 @@ impl GoogleKeyProvider {
         google_keys
             .0
             .get(kid)
-            .ok_or(format_err!("Provided kid not found"))
+            .ok_or_else(|| format_err!("Provided kid not found"))
     }
 
     fn get_keys(&mut self) -> Result<&GoogleKeys, Error> {
@@ -40,7 +40,7 @@ impl GoogleKeyProvider {
         } else {
             self.cached_keys
                 .as_ref()
-                .ok_or(format_err!("Internal error, key cache unexpectedly empty"))
+                .ok_or_else(|| format_err!("Internal error, key cache unexpectedly empty"))
         }
     }
 
@@ -87,7 +87,7 @@ impl GoogleKeyProvider {
         let max_age_secs: u64 = cache_header_str
             .split(", ")
             .find(|part| part.to_lowercase().starts_with(MAX_AGE_DIRECTIVE))?
-            .split("=")
+            .split('=')
             .last()?
             .parse()
             .ok()?;
