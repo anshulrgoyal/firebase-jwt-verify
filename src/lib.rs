@@ -1,11 +1,12 @@
 use failure::{format_err, Error};
 use jsonwebtoken::Validation;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde_json::Value;
 
 mod key_provider;
 use key_provider::GoogleKeyProvider;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Claims {
     pub aud: String,
     pub auth_time: u64, // unix sec
@@ -13,8 +14,18 @@ pub struct Claims {
     pub iat: u64,       // unix sec
     pub iss: String,
     pub sub: String,
+    #[serde(default)]
     pub user_id: String,
+    #[serde(default)]
     pub provider_id: String,
+    #[serde(default)]
+    pub firebase: FirebaseClaim,
+}
+
+#[derive(Deserialize, Debug, Clone, Default)]
+pub struct FirebaseClaim {
+    #[serde(default)]
+    pub sign_in_provider: String,
 }
 
 pub struct Client {
