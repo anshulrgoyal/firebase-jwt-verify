@@ -14,6 +14,7 @@ pub struct Claims {
     pub iss: String,
     pub sub: String,
     pub user_id: String,
+    pub provider_id: String,
 }
 
 pub struct Client {
